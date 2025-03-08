@@ -1,5 +1,5 @@
 ﻿using PizzaEnergyCoders.Services;
-using Sitecore.Configuration;https://dev.hackathon2025.com/sitecore/shell/Applications/Content%20Manager/#
+using Sitecore.Configuration;
 using Sitecore.Data;
 using Sitecore.Data.Fields;
 using Sitecore.Data.Items;

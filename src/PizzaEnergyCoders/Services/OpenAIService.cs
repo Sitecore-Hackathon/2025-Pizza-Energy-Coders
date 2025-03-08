@@ -21,30 +21,25 @@ namespace PizzaEnergyCoders.Services
         /// Method to call Open AI
         /// </summary>
         /// <param name="data">Receives the data to be analyzed </param>
+        /// <param name="checkSensitiveData">Check if data contains sensitive data </param>
         /// <returns>This method returns a string with the types for each field</returns>
-        public async Task<ChatCompletionResponse> GetChatCompletionAsync(string data)
+        public async Task<ChatCompletionResponse> GetChatCompletionAsync(string data, bool checkSensitiveData)
         {
             //Reads the API Key from the setting config. See the documentation to UPDATE
             string apiKey = Settings.GetSetting("OPENAI_APIKEY");
 
             var url = Settings.GetSetting("OPENAI_URL");
 
-            var openAIPromptUser = "";
+            var openAIPromptUser = Settings.GetSetting("OpenAIPromptUser"); ;
 
             if (checkSensitiveData)
-            {
                 openAIPromptUser = Settings.GetSetting("OpenAIPromptUserCheckSensitive");
-            }
-            else
-            {
-                openAIPromptUser = Settings.GetSetting("OpenAIPromptUser");
-            }
 
             var jsonBody = $@"{{
                 ""model"": ""gpt-4o"",
                 ""messages"": [
                     {{ ""role"": ""system"", ""content"": ""{Settings.GetSetting("OpenAIPromptSystem")}"" }},
-                    {{ ""role"": ""user"", ""content"": ""{openAIPromptUser} {data.Replace("\n","").Replace("\r", "")}"" }}
+                    {{ ""role"": ""user"", ""content"": ""{openAIPromptUser} {data.Replace("\n", "").Replace("\r", "")}"" }}
                 ]
             }}";
 
