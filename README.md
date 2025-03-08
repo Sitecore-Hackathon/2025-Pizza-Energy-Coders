@@ -5,3 +5,11 @@
 - [Entry form template](ENTRYFORM.md)
   
 ### ⟹ [Insert your documentation here](ENTRYFORM.md) <<
+## Team name
+⟹ Pizza Energy coders
+
+## Category
+⟹ Free for all
+
+## Description
+⟹ Creates items/templates from an online document (Google Docs/ Google Spreadsheet)
