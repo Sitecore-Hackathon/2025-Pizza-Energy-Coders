@@ -82,6 +82,9 @@
                 <br />
                 <asp:Button ID="btnImport" runat="server" Text="Import to Sitecore" OnClick="btnImport_Click" CssClass="btn" />
             </div>
+            <div class="modal-footer">
+                <asp:Label runat="server" ID="lblSummary"></asp:Label>
+            </div>
         </div>
     </form>
 </body>

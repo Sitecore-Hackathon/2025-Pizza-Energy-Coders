@@ -4,8 +4,6 @@ using Sitecore.Data;
 using Sitecore.Data.Items;
 using Sitecore.SecurityModel;
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
 {
@@ -14,13 +12,14 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
         readonly Database masterDb = Sitecore.Configuration.Factory.GetDatabase("master");
         protected void Page_Load(object sender, EventArgs e)
         {
-
+            lblSummary.Text = "";
         }
 
         protected async void btnImport_Click(object sender, EventArgs e)
         {
             string url = txtUrl.Text;
-
+            bool createdTemplate = false;
+            int createdItems = 0;
             if (masterDb == null)
                 return;
             Item parentItem = masterDb.GetItem(Settings.GetSetting("Foundation.HomePath"));
@@ -43,6 +42,10 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
                         {
                             TemplateItem standardTemplate = masterDb.GetTemplate(Sitecore.TemplateIDs.Template);
                             Item newTemplate = templatesFolder.Add(doc.TemplateName, new TemplateID(standardTemplate.ID));
+                            using (new EditContext(newTemplate))
+                            {
+                                newTemplate.Fields[Settings.GetSetting("Foundation.BaseTemplateField")].Value = Settings.GetSetting("Foundation.StandardTemplate");
+                            }
                             templatesFolder.Editing.EndEdit();
                             templateIdVariable = newTemplate?.ID;
                             Item section = AddTemplateSection(newTemplate, "General");
@@ -50,41 +53,52 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
                             {
                                 AddFieldToTemplate(section, item.Key, "Single-Line Text");
                             }
-
+                            createdTemplate = true;
                         }
                         catch
                         {
                             templatesFolder.Editing.CancelEdit();
                             throw;
-                        }
+                        }                        
                     }
                 }
                 TemplateID templateId = new TemplateID(templateIdVariable);
                 using (new SecurityDisabler())
                 {
-                    if (parentItem != null)
+                    if (parentItem == null)
+                        break;
+
+                    Item newItem = parentItem.Add(CheckItem(doc.Title), templateId);
+                    if (newItem == null)
+                        break;
+                    newItem.Editing.BeginEdit();
+                    try
                     {
-                        Item newItem = parentItem.Add(doc.Title, templateId);
-                        if (newItem != null)
+                        foreach (var item in doc.KeyValues)
                         {
-                            newItem.Editing.BeginEdit();
-                            try
-                            {
-                                foreach (var item in doc.KeyValues)
-                                {
-                                    newItem[item.Key] = item.Value;
-                                }
-                                newItem.Editing.EndEdit();
-                            }
-                            catch
-                            {
-                                newItem.Editing.CancelEdit();
-                                throw;
-                            }
+                            newItem[item.Key] = item.Value;
                         }
+                        newItem.Editing.EndEdit();
+                    }
+                    catch
+                    {
+                        newItem.Editing.CancelEdit();
+                        throw;
                     }
                 }
+                createdItems++;
             }
+            lblSummary.Text = (createdTemplate ? "A template was created. " : "")+ "Total of items" + createdItems + " created";
+        }
+        private string CheckItem(string itemTitle, int iteration = 0, string itemTitleOriginal = "")
+        {
+            Item newItem = masterDb.GetItem(Settings.GetSetting("Foundation.HomePath") + "/" + itemTitle);
+            if (newItem == null)
+                return itemTitle;
+
+            if (itemTitleOriginal == "")
+                itemTitleOriginal = itemTitle;
+            return CheckItem(itemTitleOriginal + "_" + iteration++, iteration++, itemTitleOriginal);
         }
         private Item AddTemplateSection(Item templateItem, string sectionName)
         {
