@@ -2,6 +2,9 @@
 
 namespace PizzaEnergyCoders.Models
 {
+    /// <summary>
+    /// Model for the item creation
+    /// </summary>
     public class DocumentModel
     {
         public string TemplateName { get; set; }

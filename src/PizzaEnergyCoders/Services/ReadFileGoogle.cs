@@ -18,8 +18,14 @@ namespace PizzaEnergyCoders.Services
 {
     public static class ReadFileGoogle
     {
+        /// <summary>
+        /// Method to call child methods depending on the type of the string
+        /// </summary>
+        /// <param name="URL">Shared Google Doc or Google Spreadsheet</param>
+        /// <returns>Return a List of DocumentModel</returns>
         public static async Task<List<DocumentModel>> Import(string URL)
         {
+            //Sets file id from URL
             string fileId = ExtractFileId(URL);
 
             if (string.IsNullOrEmpty(fileId))
@@ -42,7 +48,11 @@ namespace PizzaEnergyCoders.Services
                 throw new Exception("Unsupported file type.");
             }
         }
-
+        /// <summary>
+        /// Gets the type of the google doc from the URL
+        /// </summary>
+        /// <param name="fileId">Field id from the URL</param>
+        /// <returns>Returns google type</returns>
         static async Task<string> GetGoogleDriveFileType(string fileId)
         {
             string[] scopes = { DriveService.Scope.DriveMetadataReadonly };
@@ -68,13 +78,21 @@ namespace PizzaEnergyCoders.Services
                 return null;
             }
         }
-
+        /// <summary>
+        /// Method to extract the doc Id from the URL
+        /// </summary>
+        /// <param name="url">Shared Google Doc or Google Spreadsheet</param>
+        /// <returns></returns>
         static string ExtractFileId(string url)
         {
             var match = Regex.Match(url, @"/d/([a-zA-Z0-9-_]+)");
             return match.Success ? match.Groups[1].Value : string.Empty;
         }
-
+        /// <summary>
+        /// Method to read Google Doc
+        /// </summary>
+        /// <param name="URL">Shared Google Doc or Google Spreadsheet</param>
+        /// <returns>Return a List of DocumentModel</returns>
         static async Task<List<DocumentModel>> ReadGoogleDocs(string URL)
         {
             string[] scopes = { DocsService.Scope.DocumentsReadonly };
@@ -110,10 +128,10 @@ namespace PizzaEnergyCoders.Services
                         {
                             if (row.TableCells.Count >= 2)
                             {
-                                
+
                                 string header = ExtractTextFromCell(row.TableCells[0]).Replace(":", "").Trim();
 
-                                
+
                                 string content = ExtractTextFromCell(row.TableCells[1]).Trim();
 
                                 if (!string.IsNullOrEmpty(header) && !string.IsNullOrEmpty(content))
@@ -144,37 +162,11 @@ namespace PizzaEnergyCoders.Services
 
             return document;
         }
-
-
-        static string ExtractTextFromCell(TableCell cell)
-        {
-            StringBuilder cellText = new StringBuilder();
-
-            foreach (var cellElement in cell.Content)
-            {
-                if (cellElement.Paragraph != null)
-                {
-                    foreach (var text in cellElement.Paragraph.Elements)
-                    {
-                        if (text.TextRun != null)
-                        {
-                            cellText.Append(text.TextRun.Content);
-                        }
-                    }
-                }
-            }
-
-            return cellText.ToString();
-        }
-
-
-        static string ExtractFirstValueBeforeComma(string content)
-        {
-            int commaIndex = content.IndexOf(",");
-            return commaIndex != -1 ? content.Substring(0, commaIndex).Trim() : content.Trim();
-        }
-
-
+        /// <summary>
+        /// Method to read Google Spreadsheet
+        /// </summary>
+        /// <param name="URL">Shared Google Doc or Google Spreadsheet</param>
+        /// <returns>Return a List of DocumentModel</returns>
         static async Task<List<DocumentModel>> ReadGoogleSheets(string URL)
         {
             string[] scopes = { SheetsService.Scope.SpreadsheetsReadonly };
@@ -209,7 +201,7 @@ namespace PizzaEnergyCoders.Services
                         .Skip(2)
                         .Take(firstRow.Count)
                         .Select(cell => cell?.ToString() ?? string.Empty)
-                        .ToList();*/                   
+                        .ToList();*/
 
                     foreach (var row in values.Skip(1))
                     {
@@ -243,6 +235,42 @@ namespace PizzaEnergyCoders.Services
             }
 
             return document;
+        }
+        /// <summary>
+        /// Method to Extract Text from a Cell
+        /// </summary>
+        /// <param name="cell">Table cell</param>
+        /// <returns>Cell text</returns>
+        static string ExtractTextFromCell(TableCell cell)
+        {
+            StringBuilder cellText = new StringBuilder();
+
+            foreach (var cellElement in cell.Content)
+            {
+                if (cellElement.Paragraph != null)
+                {
+                    foreach (var text in cellElement.Paragraph.Elements)
+                    {
+                        if (text.TextRun != null)
+                        {
+                            cellText.Append(text.TextRun.Content);
+                        }
+                    }
+                }
+            }
+
+            return cellText.ToString();
+        }
+
+        /// <summary>
+        /// Method to Extract First Value before Comma
+        /// </summary>
+        /// <param name="content">Content to be analized</param>
+        /// <returns>Returns a trimed text</returns>
+        static string ExtractFirstValueBeforeComma(string content)
+        {
+            int commaIndex = content.IndexOf(",");
+            return commaIndex != -1 ? content.Substring(0, commaIndex).Trim() : content.Trim();
         }
     }
 }

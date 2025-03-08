@@ -119,18 +119,18 @@
     <form id="form1" runat="server">
         <!-- Modal -->
         <div class="modal">
-            <!-- Cabecera del Modal -->
+            <!-- Modal Header-->
             <div class="modal-header">
                 <h2>Document Importer</h2>
             </div>
-            <!-- Cuerpo del Modal -->
+            <!-- Modal Body-->
             <div class="modal-body">
                 <label for="txtUrl">Enter URL:</label>
                 <asp:TextBox
                     ID="txtUrl"
                     runat="server"
                     CssClass="form-control"
-                    Text="https://docs.google.com/spreadsheets/d/1i3NB4bzcSj8W58AQO5UrLembNdadCZw5JDiL-aNkxwo/edit?usp=sharing"></asp:TextBox>
+                    Text=""></asp:TextBox>
                 <br />
                 <asp:Button
                     ID="btnImport"
