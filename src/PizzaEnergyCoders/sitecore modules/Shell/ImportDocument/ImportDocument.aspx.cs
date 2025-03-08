@@ -25,136 +25,150 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
         /// <param name="e"></param>
         protected async void btnImport_Click(object sender, EventArgs e)
         {
-            //Sets Javascripts to show loader gift
-            string scriptInit = @"
-              document.querySelector('.loader').style.display = 'block';
-              document.querySelector('.modal').style.display = 'none';";
-
-            ScriptManager.RegisterStartupScript(this, GetType(), "ShowLoader", scriptInit, true);
-            //Gets the url from the Textbox
             string url = txtUrl.Text;
-            //Set variables to show the final message
-            bool createdTemplate = false;
-            int createdItems = 0;
-
-            if (masterDb == null)
-                return;
-            //Sets the main path to create the new items
-            Item parentItem = masterDb.GetItem(Settings.GetSetting("Foundation.HomePath"));
-            //Gets rows from the URL
-            var document = await ReadFileGoogle.Import(url);
-            //Init Open AI
-            OpenAIService openAIService = new OpenAIService();
-
-            foreach (var doc in document)
+            if (url.Trim().Length > 0)
             {
-                //Gets the template item / id
-                Item templateItem = masterDb.GetItem(Settings.GetSetting("Project.TemplatesPath") + doc.TemplateName);
-
-                ID templateIdVariable = new ID();
-                //checks if the template exists in the CMS
-                if (templateItem != null)
+                try
                 {
-                    templateIdVariable = templateItem.ID; // Returns the GUID of the template
+                    //Sets Javascripts to show loader gift
+                    string scriptInit = @"document.querySelector('.loader').style.display = 'block';document.querySelector('.modal').style.display = 'none';";
+
+                    ScriptManager.RegisterStartupScript(this, GetType(), "ShowLoader", scriptInit, true);
+                    //Gets the url from the Textbox
+
+                    //Set variables to show the final message
+                    bool createdTemplate = false;
+                    int createdItems = 0;
+
+                    if (masterDb == null)
+                        return;
+                    //Sets the main path to create the new items
+                    Item parentItem = masterDb.GetItem(Settings.GetSetting("Foundation.HomePath"));
+                    //Gets rows from the URL
+                    var document = await ReadFileGoogle.Import(url);
+                    //Init Open AI
+                    OpenAIService openAIService = new OpenAIService();
+
+                    foreach (var doc in document)
+                    {
+                        //Gets the template item / id
+                        Item templateItem = masterDb.GetItem(Settings.GetSetting("Project.TemplatesPath") + doc.TemplateName);
+
+                        ID templateIdVariable = new ID();
+                        //checks if the template exists in the CMS
+                        if (templateItem != null)
+                        {
+                            templateIdVariable = templateItem.ID; // Returns the GUID of the template
+                        }
+                        else
+                        {
+                            //Sets the path for new templates
+                            Item templatesFolder = masterDb.GetItem(Settings.GetSetting("Project.TemplatesPath") + "/");
+
+                            using (new SecurityDisabler())
+                            {
+                                templatesFolder.Editing.BeginEdit();
+                                try
+                                {
+                                    TemplateItem standardTemplate = masterDb.GetTemplate(Sitecore.TemplateIDs.Template);
+                                    //creates the new template
+                                    Item newTemplate = templatesFolder.Add(doc.TemplateName, new TemplateID(standardTemplate.ID));
+                                    //Sets the Standard template 
+                                    using (new EditContext(newTemplate))
+                                    {
+                                        newTemplate.Fields[Settings.GetSetting("Foundation.BaseTemplateField")].Value = Settings.GetSetting("Foundation.StandardTemplate");
+                                    }
+                                    templatesFolder.Editing.EndEdit();
+                                    templateIdVariable = newTemplate?.ID;
+                                    //Creates section
+                                    Item section = AddTemplateSection(newTemplate, "General");
+                                    List<bool> sensitiveArray = new List<bool>();
+
+                                    foreach (var item in doc.KeyValues)
+                                    {
+                                        //get fieldtype
+                                        var openAIServiceResponses = await openAIService.GetChatCompletionAsync(item.Value, false);
+                                        var fieldType = openAIServiceResponses.Choices[0].Message.Content;
+
+                                        if (string.IsNullOrEmpty(fieldType))
+                                            fieldType = "Single-Line Text";
+                                        //Creates new field
+                                        AddFieldToTemplate(section, item.Key, fieldType);
+                                    }
+                                    AddFieldToTemplate(section, "hasSensitiveData", "Checkbox");
+
+                                    createdTemplate = true;
+                                }
+                                catch
+                                {
+                                    templatesFolder.Editing.CancelEdit();
+                                    throw;
+                                }
+                            }
+                        }
+                        TemplateID templateId = new TemplateID(templateIdVariable);
+                        //Creates new Items
+                        using (new SecurityDisabler())
+                        {
+                            if (parentItem == null)
+                                break;
+                            //Creates new Item
+                            Item newItem = parentItem.Add(CheckItem(doc.Title), templateId);
+                            if (newItem == null)
+                                break;
+                            newItem.Editing.BeginEdit();
+                            try
+                            {
+                                int sensitiveCounter = 0;
+                                foreach (var item in doc.KeyValues)
+                                {
+                                    //check sensitive data
+                                    var openAIServiceResponsesD = await openAIService.GetChatCompletionAsync(item.Value, true);
+                                    var hasSensitiveData = openAIServiceResponsesD.Choices[0].Message.Content;
+
+                                    if (Convert.ToBoolean(hasSensitiveData))
+                                    {
+                                        sensitiveCounter = sensitiveCounter + 1;
+                                    }
+
+                                    newItem[item.Key] = item.Value;
+                                }
+                                if (sensitiveCounter > 0)
+                                {
+                                    newItem["hasSensitiveData"] = "1";
+                                }
+
+                                newItem.Editing.EndEdit();
+                            }
+                            catch
+                            {
+                                newItem.Editing.CancelEdit();
+                                throw;
+                            }
+                        }
+                        createdItems++;
+                    }
+
+                    //Shows the summary label
+                    lblSummary.Text = (createdTemplate ? "A template has been created. " : "") + "Total of created items: " + createdItems + ".";
+
+                    //Sets Javascripts to hide loader gift
+                    string script = @"document.querySelector('.loader').style.display = 'none';document.querySelector('.modal').style.display = 'block';";
+
+                    ScriptManager.RegisterStartupScript(this, GetType(), "HideLoader", script, true);
                 }
-                else
+                catch (Exception ex)
                 {
-                    //Sets the path for new templates
-                    Item templatesFolder = masterDb.GetItem(Settings.GetSetting("Project.TemplatesPath") + "/");
-
-                    using (new SecurityDisabler())
-                    {
-                        templatesFolder.Editing.BeginEdit();
-                        try
-                        {
-                            TemplateItem standardTemplate = masterDb.GetTemplate(Sitecore.TemplateIDs.Template);
-                            //creates the new template
-                            Item newTemplate = templatesFolder.Add(doc.TemplateName, new TemplateID(standardTemplate.ID));
-                            //Sets the Standard template 
-                            using (new EditContext(newTemplate))
-                            {
-                                newTemplate.Fields[Settings.GetSetting("Foundation.BaseTemplateField")].Value = Settings.GetSetting("Foundation.StandardTemplate");
-                            }
-                            templatesFolder.Editing.EndEdit();
-                            templateIdVariable = newTemplate?.ID;
-                            //Creates section
-                            Item section = AddTemplateSection(newTemplate, "General");
-                            List<bool> sensitiveArray = new List<bool>();
-
-                            foreach (var item in doc.KeyValues)
-                            {
-                                //get fieldtype
-                                var openAIServiceResponses = await openAIService.GetChatCompletionAsync(item.Value, false);
-                                var fieldType = openAIServiceResponses.Choices[0].Message.Content;
-
-                                if (string.IsNullOrEmpty(fieldType))
-                                    fieldType = "Single-Line Text";
-                                //Creates new field
-                                AddFieldToTemplate(section, item.Key, fieldType);
-                            }
-                            AddFieldToTemplate(section, "hasSensitiveData", "Checkbox");
-
-                            createdTemplate = true;
-                        }
-                        catch
-                        {
-                            templatesFolder.Editing.CancelEdit();
-                            throw;
-                        }
-                    }
+                    string scriptE = @"alert('Error: " + ex.Message.Replace("'", "\\'") + "');";
+                    ScriptManager.RegisterStartupScript(this, GetType(), "ShowAlert", scriptE, true);
                 }
-                TemplateID templateId = new TemplateID(templateIdVariable);
-                //Creates new Items
-                using (new SecurityDisabler())
-                {
-                    if (parentItem == null)
-                        break;
-                    //Creates new Item
-                    Item newItem = parentItem.Add(CheckItem(doc.Title), templateId);
-                    if (newItem == null)
-                        break;
-                    newItem.Editing.BeginEdit();
-                    try
-                    {
-                        int sensitiveCounter = 0;
-                        foreach (var item in doc.KeyValues)
-                        {
-                            //check sensitive data
-                            var openAIServiceResponsesD = await openAIService.GetChatCompletionAsync(item.Value, true);
-                            var hasSensitiveData = openAIServiceResponsesD.Choices[0].Message.Content;
-
-                            if (Convert.ToBoolean(hasSensitiveData))
-                            {
-                                sensitiveCounter = sensitiveCounter + 1;
-                            }
-
-                            newItem[item.Key] = item.Value;
-                        }
-                        if (sensitiveCounter > 0)
-                        {
-                            newItem["hasSensitiveData"] = "1";
-                        }
-
-                        newItem.Editing.EndEdit();
-                    }
-                    catch
-                    {
-                        newItem.Editing.CancelEdit();
-                        throw;
-                    }
-                }
-                createdItems++;
             }
+            else
+            {
+                string scriptA = @"alert('Input a valid URL!');";
+                ScriptManager.RegisterStartupScript(this, GetType(), "ShowAlert", scriptA, true);
 
-            //Shows the summary label
-            lblSummary.Text = (createdTemplate ? "A template has been created. " : "") + "Total of created items: " + createdItems + ".";
-
-            //Sets Javascripts to hide loader gift
-            string script = @"
-              document.querySelector('.loader').style.display = 'none';
-              document.querySelector('.modal').style.display = 'block';";
-
-            ScriptManager.RegisterStartupScript(this, GetType(), "HideLoader", script, true);
+            }
         }
         /// <summary>
         /// Helper Method th check if the item exits in the CMS. If it is true changes the name until it does not.
