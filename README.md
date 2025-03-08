@@ -74,7 +74,7 @@ Our Import module does need two key Pre-requisites
 
 ⟹ Please follow the instruction below
 
--   Install the next Sitecore Package [SitecorePackage](docs/Package.zip)
+-   Install the next [Sitecore Package](docs/Package.zip)
     -   This package will add "Import Document" in the Ribbon under "Developer" tab
 -   Add the "credentials.json" created in the pre requisites in the local published solution under this folder "\App_Data\Creds"
 -   Add the Open AI Key in "ImportDocumentCommand.config" in "OPENAI_APIKEY" setting value in the local published solution under this folder"\App_Config\Include"
