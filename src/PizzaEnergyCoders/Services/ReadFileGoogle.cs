@@ -206,6 +206,7 @@ namespace PizzaEnergyCoders.Services
                         .ToList();
 
                     var secondRow = values[1]
+                        .Skip(2)
                         .Take(firstRow.Count)
                         .Select(cell => cell?.ToString() ?? string.Empty)
                         .ToList();
