@@ -129,8 +129,7 @@
                 <asp:TextBox
                     ID="txtUrl"
                     runat="server"
-                    CssClass="form-control"
-                    Text=""></asp:TextBox>
+                    CssClass="form-control"></asp:TextBox>
                 <br />
                 <asp:Button
                     ID="btnImport"

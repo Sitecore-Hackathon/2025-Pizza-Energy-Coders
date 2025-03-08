@@ -23,12 +23,6 @@ namespace PizzaEnergyCoders.Commands
                 SheerResponse.ShowModalDialog(url, "800", "360", "Import", true);
                 args.WaitForPostBack();
             }
-            else
-            {
-                if (!string.IsNullOrEmpty(args.Result) && args.Result != "undefined")
-                {                    
-                }
-            }
         }
     }
 }

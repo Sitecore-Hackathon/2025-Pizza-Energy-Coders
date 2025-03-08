@@ -1,9 +1,12 @@
 ﻿using PizzaEnergyCoders.Services;
-using Sitecore.Configuration;
+using Sitecore.Configuration;https://dev.hackathon2025.com/sitecore/shell/Applications/Content%20Manager/#
 using Sitecore.Data;
+using Sitecore.Data.Fields;
 using Sitecore.Data.Items;
 using Sitecore.SecurityModel;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 
 namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
@@ -76,17 +79,21 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
                             templateIdVariable = newTemplate?.ID;
                             //Creates section
                             Item section = AddTemplateSection(newTemplate, "General");
+                            List<bool> sensitiveArray = new List<bool>();
+
                             foreach (var item in doc.KeyValues)
                             {
                                 //get fieldtype
-                                var openAIServiceResponse = await openAIService.GetChatCompletionAsync(item.Value);
-                                var fieldType = openAIServiceResponse.Choices[0].Message.Content;
+                                var openAIServiceResponses = await openAIService.GetChatCompletionAsync(item.Value, false);
+                                var fieldType = openAIServiceResponses.Choices[0].Message.Content;
 
                                 if (string.IsNullOrEmpty(fieldType))
                                     fieldType = "Single-Line Text";
                                 //Creates new field
                                 AddFieldToTemplate(section, item.Key, fieldType);
                             }
+                            AddFieldToTemplate(section, "hasSensitiveData", "Checkbox");
+
                             createdTemplate = true;
                         }
                         catch
@@ -109,10 +116,25 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
                     newItem.Editing.BeginEdit();
                     try
                     {
+                        int sensitiveCounter = 0;
                         foreach (var item in doc.KeyValues)
                         {
+                            //check sensitive data
+                            var openAIServiceResponsesD = await openAIService.GetChatCompletionAsync(item.Value, true);
+                            var hasSensitiveData = openAIServiceResponsesD.Choices[0].Message.Content;
+
+                            if (Convert.ToBoolean(hasSensitiveData))
+                            {
+                                sensitiveCounter = sensitiveCounter + 1;
+                            }
+
                             newItem[item.Key] = item.Value;
                         }
+                        if (sensitiveCounter > 0)
+                        {
+                            newItem["hasSensitiveData"] = "1";
+                        }
+
                         newItem.Editing.EndEdit();
                     }
                     catch

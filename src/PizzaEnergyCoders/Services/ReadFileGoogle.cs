@@ -6,6 +6,7 @@ using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
 using PizzaEnergyCoders.Models;
+using Sitecore.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -180,7 +181,7 @@ namespace PizzaEnergyCoders.Services
             });
 
             string spreadsheetId = ExtractFileId(URL);
-            string range = "Sheet1!A1:Z101";
+            string range = Settings.GetSetting("SpreadsheetRange");
             var document = new List<DocumentModel>();
 
             try
@@ -196,12 +197,6 @@ namespace PizzaEnergyCoders.Services
                         .Where(cell => cell != null && !string.IsNullOrWhiteSpace(cell.ToString()))
                         .Select(cell => cell.ToString())
                         .ToList();
-
-                    /*var secondRow = values[1]
-                        .Skip(2)
-                        .Take(firstRow.Count)
-                        .Select(cell => cell?.ToString() ?? string.Empty)
-                        .ToList();*/
 
                     foreach (var row in values.Skip(1))
                     {

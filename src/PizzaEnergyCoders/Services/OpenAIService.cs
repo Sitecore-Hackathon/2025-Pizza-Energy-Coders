@@ -26,12 +26,25 @@ namespace PizzaEnergyCoders.Services
         {
             //Reads the API Key from the setting config. See the documentation to UPDATE
             string apiKey = Settings.GetSetting("OPENAI_APIKEY");
-            //Sets the promt to call Open AI
+
+            var url = Settings.GetSetting("OPENAI_URL");
+
+            var openAIPromptUser = "";
+
+            if (checkSensitiveData)
+            {
+                openAIPromptUser = Settings.GetSetting("OpenAIPromptUserCheckSensitive");
+            }
+            else
+            {
+                openAIPromptUser = Settings.GetSetting("OpenAIPromptUser");
+            }
+
             var jsonBody = $@"{{
                 ""model"": ""gpt-4o"",
                 ""messages"": [
-                    {{ ""role"": ""system"", ""content"": ""you are a content editor in sitecore"" }},
-                    {{ ""role"": ""user"", ""content"": ""Transform the given word by replacing it with its corresponding Sitecore field type. Allowed Sitecore field types: Date, Datetime, Number, Single-Line Text, Rich Text. Classification Rules: If the word contains only numbers, classify it as Number.If the word matches a date format like dd/MM/yyyy or yyyy-MM-dd, classify it as Date.If the word matches a datetime format (including time), classify it as Datetime.If the word has more than 50 characters or has HTML tags, classify it as Rich Text.Respond only with the replaced field type. Use this word:: {data.Replace("\n", "").Replace("\r", "")}"" }}
+                    {{ ""role"": ""system"", ""content"": ""{Settings.GetSetting("OpenAIPromptSystem")}"" }},
+                    {{ ""role"": ""user"", ""content"": ""{openAIPromptUser} {data.Replace("\n","").Replace("\r", "")}"" }}
                 ]
             }}";
 
