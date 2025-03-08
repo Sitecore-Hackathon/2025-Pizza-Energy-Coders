@@ -21,7 +21,7 @@ Our Import module does need two key Pre-requisites
 #### Credentials step by step Set up
 * Login in Google Cloud
 * Click on "Get started for free"
-    * Image
+    [imageLogin](docs/images/image1.png)
 * Create a new Project
     *Image
     * Image
