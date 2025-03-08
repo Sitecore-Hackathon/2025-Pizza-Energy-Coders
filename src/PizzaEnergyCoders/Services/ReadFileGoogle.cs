@@ -21,6 +21,7 @@ namespace PizzaEnergyCoders.Services
         public static async Task<List<DocumentModel>> Import(string URL)
         {
             string fileId = ExtractFileId(URL);
+
             if (string.IsNullOrEmpty(fileId))
             {
                 throw new Exception("Invalid Google Drive URL.");
@@ -100,57 +101,30 @@ namespace PizzaEnergyCoders.Services
                     KeyValues = new Dictionary<string, string>()
                 };
 
-                StringBuilder docContent = new StringBuilder();
 
                 foreach (var element in doc.Body.Content)
                 {
-                    if (element.Paragraph != null)
-                    {
-                        foreach (var text in element.Paragraph.Elements)
-                        {
-                            if (text.TextRun != null)
-                            {
-                                docContent.Append(text.TextRun.Content);
-                            }
-                        }
-                        docContent.AppendLine();
-                    }
-
                     if (element.Table != null)
                     {
-                        StringBuilder tableContent = new StringBuilder();
-                        int rowIndex = 0;
-
                         foreach (var row in element.Table.TableRows)
                         {
-                            tableContent.Append($"Row {rowIndex + 1}: ");
-
-                            foreach (var cell in row.TableCells)
+                            if (row.TableCells.Count >= 2)
                             {
-                                foreach (var cellElement in cell.Content)
+                                
+                                string header = ExtractTextFromCell(row.TableCells[0]).Replace(":", "").Trim();
+
+                                
+                                string content = ExtractTextFromCell(row.TableCells[1]).Trim();
+
+                                if (!string.IsNullOrEmpty(header) && !string.IsNullOrEmpty(content))
                                 {
-                                    if (cellElement.Paragraph != null)
-                                    {
-                                        foreach (var text in cellElement.Paragraph.Elements)
-                                        {
-                                            if (text.TextRun != null)
-                                            {
-                                                tableContent.Append(text.TextRun.Content + " | ");
-                                            }
-                                        }
-                                    }
+                                    docModel.KeyValues[header] = content;
                                 }
                             }
-
-                            tableContent.AppendLine();
-                            rowIndex++;
                         }
-
-                        docModel.KeyValues.Add($"Table_{rowIndex}", tableContent.ToString());
                     }
                 }
 
-                docModel.KeyValues.Add("Content", docContent.ToString());
                 document.Add(docModel);
             }
             catch (Google.GoogleApiException ex)
@@ -164,6 +138,29 @@ namespace PizzaEnergyCoders.Services
 
             return document;
         }
+
+
+        static string ExtractTextFromCell(TableCell cell)
+        {
+            StringBuilder cellText = new StringBuilder();
+
+            foreach (var cellElement in cell.Content)
+            {
+                if (cellElement.Paragraph != null)
+                {
+                    foreach (var text in cellElement.Paragraph.Elements)
+                    {
+                        if (text.TextRun != null)
+                        {
+                            cellText.Append(text.TextRun.Content);
+                        }
+                    }
+                }
+            }
+
+            return cellText.ToString();
+        }
+
 
         static async Task<List<DocumentModel>> ReadGoogleSheets(string URL)
         {
