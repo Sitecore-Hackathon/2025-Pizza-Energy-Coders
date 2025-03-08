@@ -96,11 +96,11 @@ namespace PizzaEnergyCoders.Services
 
                 var docModel = new DocumentModel()
                 {
-                    TemplateName = "GoogleDocs",
-                    Title = doc.Title,
+                    TemplateName = doc.Title,
                     KeyValues = new Dictionary<string, string>()
                 };
 
+                bool firstRowProcessed = false;
 
                 foreach (var element in doc.Body.Content)
                 {
@@ -118,6 +118,12 @@ namespace PizzaEnergyCoders.Services
 
                                 if (!string.IsNullOrEmpty(header) && !string.IsNullOrEmpty(content))
                                 {
+                                    if (!firstRowProcessed)
+                                    {
+                                        docModel.Title = ExtractFirstValueBeforeComma(content);
+                                        firstRowProcessed = true;
+                                    }
+
                                     docModel.KeyValues[header] = content;
                                 }
                             }
@@ -159,6 +165,13 @@ namespace PizzaEnergyCoders.Services
             }
 
             return cellText.ToString();
+        }
+
+
+        static string ExtractFirstValueBeforeComma(string content)
+        {
+            int commaIndex = content.IndexOf(",");
+            return commaIndex != -1 ? content.Substring(0, commaIndex).Trim() : content.Trim();
         }
 
 
