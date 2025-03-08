@@ -1,9 +1,11 @@
 ﻿using PizzaEnergyCoders.Services;
 using Sitecore.Configuration;
 using Sitecore.Data;
+using Sitecore.Data.Fields;
 using Sitecore.Data.Items;
 using Sitecore.SecurityModel;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 
@@ -33,7 +35,7 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
             Item parentItem = masterDb.GetItem(Settings.GetSetting("Foundation.HomePath"));
             var document = await ReadFileGoogle.Import(url);
 
-            OpenAIService openAIService = new OpenAIService();           
+            OpenAIService openAIService = new OpenAIService();
 
             foreach (var doc in document)
             {
@@ -60,24 +62,28 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
                             templatesFolder.Editing.EndEdit();
                             templateIdVariable = newTemplate?.ID;
                             Item section = AddTemplateSection(newTemplate, "General");
+                            List<bool> sensitiveArray = new List<bool>();
+
                             foreach (var item in doc.KeyValues)
                             {
                                 //get fieldtype
-                                var openAIServiceResponse = await openAIService.GetChatCompletionAsync(item.Value);
-                                var fieldType = openAIServiceResponse.Choices[0].Message.Content;
+                                var openAIServiceResponses = await openAIService.GetChatCompletionAsync(item.Value, false);
+                                var fieldType = openAIServiceResponses.Choices[0].Message.Content;
 
                                 if (string.IsNullOrEmpty(fieldType))
                                     fieldType = "Single-Line Text";
 
                                 AddFieldToTemplate(section, item.Key, fieldType);
                             }
+                            AddFieldToTemplate(section, "hasSensitiveData", "Checkbox");
+
                             createdTemplate = true;
                         }
                         catch
                         {
                             templatesFolder.Editing.CancelEdit();
                             throw;
-                        }                        
+                        }
                     }
                 }
                 TemplateID templateId = new TemplateID(templateIdVariable);
@@ -92,10 +98,25 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
                     newItem.Editing.BeginEdit();
                     try
                     {
+                        int sensitiveCounter = 0;
                         foreach (var item in doc.KeyValues)
                         {
+                            //check sensitive data
+                            var openAIServiceResponsesD = await openAIService.GetChatCompletionAsync(item.Value, true);
+                            var hasSensitiveData = openAIServiceResponsesD.Choices[0].Message.Content;
+
+                            if (Convert.ToBoolean(hasSensitiveData))
+                            {
+                                sensitiveCounter = sensitiveCounter + 1;
+                            }
+
                             newItem[item.Key] = item.Value;
                         }
+                        if (sensitiveCounter > 0)
+                        {
+                            newItem["hasSensitiveData"] = "1";
+                        }
+
                         newItem.Editing.EndEdit();
                     }
                     catch
@@ -106,8 +127,8 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
                 }
                 createdItems++;
             }
-            lblSummary.Text = (createdTemplate ? "A template was created. " : "")+ "Total of items: " + createdItems + " created";
-            
+            lblSummary.Text = (createdTemplate ? "A template was created. " : "") + "Total of items: " + createdItems + " created";
+
             string script = @"
               document.querySelector('.loader').style.display = 'none';
               document.querySelector('.modal').style.display = 'block';";

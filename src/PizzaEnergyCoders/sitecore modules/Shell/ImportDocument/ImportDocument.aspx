@@ -128,9 +128,9 @@
                 <label for="txtUrl">Enter URL:</label>
                 <asp:TextBox
                     ID="txtUrl"
+                    Text="https://docs.google.com/spreadsheets/d/1i3NB4bzcSj8W58AQO5UrLembNdadCZw5JDiL-aNkxwo/edit?gid=0#gid=0"
                     runat="server"
-                    CssClass="form-control"
-                    Text="https://docs.google.com/spreadsheets/d/1i3NB4bzcSj8W58AQO5UrLembNdadCZw5JDiL-aNkxwo/edit?usp=sharing"></asp:TextBox>
+                    CssClass="form-control"></asp:TextBox>
                 <br />
                 <asp:Button
                     ID="btnImport"

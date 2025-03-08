@@ -13,42 +13,16 @@ namespace PizzaEnergyCoders.Commands
     {
         public override void Execute(CommandContext context)
         {
-            // Inicia el proceso en el pipeline de Sitecore
-            Sitecore.Context.ClientPage.Start(this, "Run", new NameValueCollection
-            {
-                //{ "itemId", itemSeleccionado.ID.ToString() }
-            });
+            Sitecore.Context.ClientPage.Start(this, "Run", new NameValueCollection{});
         }
 
         protected void Run(ClientPipelineArgs args)
         {
             if (!args.IsPostBack)
             {
-                // Abre una ventana modal para la interacción con la IA
                 string url = "/sitecore modules/Shell/ImportDocument/ImportDocument.aspx";
                 SheerResponse.ShowModalDialog(url, "800", "360", "Import", true);
                 args.WaitForPostBack();
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(args.Result) && args.Result != "undefined")
-                {
-                    /*string[] resultado = args.Result.Split('|');
-                    if (resultado.Length == 2)
-                    {
-                        string nombreCampo = resultado[0];
-                        string contenidoGenerado = resultado[1];
-
-                        Item item = Sitecore.Context.Database.GetItem(args.Parameters["itemId"]);
-                        if (item != null)
-                        {
-                            item.Editing.BeginEdit();
-                            item.Fields[nombreCampo].Value = contenidoGenerado;
-                            item.Editing.EndEdit();
-                            SheerResponse.Alert("El campo ha sido actualizado con el contenido generado.");
-                        }
-                    }*/
-                }
             }
         }
     }

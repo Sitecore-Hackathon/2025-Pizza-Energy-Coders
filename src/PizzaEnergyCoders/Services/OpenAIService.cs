@@ -18,32 +18,37 @@ namespace PizzaEnergyCoders.Services
             
         }
 
-        public async Task<ChatCompletionResponse> GetChatCompletionAsync(string data)
+        public async Task<ChatCompletionResponse> GetChatCompletionAsync(string data, bool checkSensitiveData)
         {
             string apiKey = Settings.GetSetting("OPENAI_APIKEY");
 
-            var url = "https://api.openai.com/v1/chat/completions";
+            var url = Settings.GetSetting("OPENAI_URL");
+
+            var openAIPromptUser = "";
+
+            if (checkSensitiveData)
+            {
+                openAIPromptUser = Settings.GetSetting("OpenAIPromptUserCheckSensitive");
+            }
+            else
+            {
+                openAIPromptUser = Settings.GetSetting("OpenAIPromptUser");
+            }
 
             var jsonBody = $@"{{
                 ""model"": ""gpt-4o"",
                 ""messages"": [
-                    {{ ""role"": ""system"", ""content"": ""you are a content editor in sitecore"" }},
-                    {{ ""role"": ""user"", ""content"": ""Transform the given word by replacing it with its corresponding Sitecore field type. Allowed Sitecore field types: Date, Datetime, Number, Single-Line Text, Rich Text. Classification Rules: If the word contains only numbers, classify it as Number.If the word matches a date format like dd/MM/yyyy or yyyy-MM-dd, classify it as Date.If the word matches a datetime format (including time), classify it as Datetime.If the word has more than 50 characters or has HTML tags, classify it as Rich Text.Respond only with the replaced field type. Use this word:: {data.Replace("\n","").Replace("\r", "")}"" }}
+                    {{ ""role"": ""system"", ""content"": ""{Settings.GetSetting("OpenAIPromptSystem")}"" }},
+                    {{ ""role"": ""user"", ""content"": ""{openAIPromptUser} {data.Replace("\n","").Replace("\r", "")}"" }}
                 ]
             }}";
 
             using (var client = new HttpClient())
             {
-                // Configura el encabezado de autenticación
                 client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
-
-                // Crea el contenido de la solicitud
                 var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
-
-                // Realiza la solicitud POST
                 var response = await client.PostAsync(url, content);
 
-                // Si la respuesta es exitosa, devuelve el contenido como string
                 if (response.IsSuccessStatusCode)
                 {
                     var aiResponse = await response.Content.ReadAsStringAsync();
@@ -52,7 +57,6 @@ namespace PizzaEnergyCoders.Services
                 }
                 else
                 {
-                    // Si hay un error, devuelve el mensaje de error
                     return new ChatCompletionResponse(){ StatusCode = response.StatusCode.ToString()};
                 }
             }
