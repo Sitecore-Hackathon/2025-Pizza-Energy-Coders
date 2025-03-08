@@ -1,12 +1,10 @@
 ﻿using PizzaEnergyCoders.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
+using Sitecore.Configuration;
 using Sitecore.Data;
 using Sitecore.Data.Items;
+using Sitecore.SecurityModel;
+using System;
+using System.Collections.Generic;
 
 namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
 {
@@ -23,7 +21,7 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
             string url = txtUrl.Text;
             DocumentModel obj = new DocumentModel()
             {
-                TemplateId = "4E37348D-A319-4577-B207-0C5F6627FDA7",
+                TemplateName = "Card",
                 Title = "item1",
                 KeyValues = new Dictionary<string, string>
                 { {"headline", "headline 1" } ,
@@ -32,25 +30,134 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
 
             if (masterDb == null)
                 return;
-            Item parentItem = masterDb.GetItem("/sitecore/content/Home"); // Change path as needed
-            TemplateID templateId = new TemplateID(new ID(obj.TemplateId)); // Replace with your template ID
-            if (parentItem != null)
+            Item parentItem = masterDb.GetItem(Settings.GetSetting("Foundation.HomePath"));
+            Item templateItem = masterDb.GetItem(Settings.GetSetting("Project.TemplatesPath") + obj.TemplateName);
+            ID templateIdVariable = new ID();
+            if (templateItem != null)
             {
-                Item newItem = parentItem.Add(obj.Title, templateId);
-                if (newItem != null)
+                templateIdVariable = templateItem.ID; // Returns the GUID of the template
+            }
+            else
+            {
+                Item templatesFolder = masterDb.GetItem(Settings.GetSetting("Project.TemplatesPath") + "/");
+                using (new SecurityDisabler())
                 {
-                    newItem.Editing.BeginEdit();
+                    templatesFolder.Editing.BeginEdit();
                     try
                     {
+                        TemplateItem standardTemplate = masterDb.GetTemplate(Sitecore.TemplateIDs.Template);
+                        Item newTemplate = templatesFolder.Add(obj.TemplateName, new TemplateID(standardTemplate.ID));
+                        templatesFolder.Editing.EndEdit();
+                        templateIdVariable = newTemplate?.ID;
+                        Item section = AddTemplateSection(newTemplate, "General");
                         foreach (var item in obj.KeyValues)
                         {
-                            newItem[item.Key] = item.Value;
+                            AddFieldToTemplate(section, item.Key, "Single-Line Text");
                         }
-                        newItem.Editing.EndEdit();
+
                     }
                     catch
                     {
-                        newItem.Editing.CancelEdit();
+                        templatesFolder.Editing.CancelEdit();
+                        throw;
+                    }
+                }
+            }
+            TemplateID templateId = new TemplateID(templateIdVariable);
+            using (new SecurityDisabler())
+            {
+                if (parentItem != null)
+                {
+                    Item newItem = parentItem.Add(obj.Title, templateId);
+                    if (newItem != null)
+                    {
+                        newItem.Editing.BeginEdit();
+                        try
+                        {
+                            foreach (var item in obj.KeyValues)
+                            {
+                                newItem[item.Key] = item.Value;
+                            }
+                            newItem.Editing.EndEdit();
+                        }
+                        catch
+                        {
+                            newItem.Editing.CancelEdit();
+                            throw;
+                        }
+                    }
+                }
+            }
+        }
+        private Item AddTemplateSection(Item templateItem, string sectionName)
+        {
+            using (new SecurityDisabler())
+            {
+                Item section = templateItem.Children[sectionName];
+
+                if (section == null)
+                {
+                    templateItem.Editing.BeginEdit();
+                    try
+                    {
+                        section = templateItem.Add(sectionName, new TemplateID(Sitecore.TemplateIDs.TemplateSection));
+                        templateItem.Editing.EndEdit();
+                    }
+                    catch
+                    {
+                        templateItem.Editing.CancelEdit();
+                        throw;
+                    }
+                }
+
+                return section;
+            }
+        }
+
+        // Helper method to add fields to a template
+        private void AddFieldToTemplate(Item section, string fieldName, string fieldType)
+        {
+            using (new SecurityDisabler())
+            {
+                section.Editing.BeginEdit();
+                try
+                {
+                    Item newField = section.Add(fieldName, new TemplateID(Sitecore.TemplateIDs.TemplateField));
+                    if (newField != null)
+                    {
+                        newField.Editing.BeginEdit();
+                        newField["Type"] = fieldType; // Assign correct field type (e.g., "Single-Line Text")
+                        newField["Title"] = fieldName; // Set the field's title
+                        newField.Editing.EndEdit();
+                    }
+
+                    section.Editing.EndEdit();
+                }
+                catch
+                {
+                    section.Editing.CancelEdit();
+                    throw;
+                }
+            }
+        }
+
+        // Helper method to create Standard Values for the template
+        private void CreateStandardValues(Item templateItem)
+        {
+            using (new SecurityDisabler())
+            {
+                Item standardValues = templateItem.Children["__Standard Values"];
+                if (standardValues == null)
+                {
+                    templateItem.Editing.BeginEdit();
+                    try
+                    {
+                        standardValues = templateItem.Add("__Standard Values", new TemplateID(new ID(Settings.GetSetting("Foundation.StandardValuesTemplate"))));
+                        templateItem.Editing.EndEdit();
+                    }
+                    catch
+                    {
+                        templateItem.Editing.CancelEdit();
                         throw;
                     }
                 }
