@@ -144,7 +144,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_Config\ImportDocumentCommand.config" />
+    <Content Include="App_Config\Include\ImportDocumentCommand.config" />
     <Content Include="sitecore modules\Shell\ImportDocument\ImportDocument.aspx" />
     <None Include="Global.asax" />
     <None Include="Web.config" />
