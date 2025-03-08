@@ -1,10 +1,9 @@
-﻿using PizzaEnergyCoders.Models;
+﻿using PizzaEnergyCoders.Services;
 using Sitecore.Configuration;
 using Sitecore.Data;
 using Sitecore.Data.Items;
 using Sitecore.SecurityModel;
 using System;
-using System.Collections.Generic;
 
 namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
 {
@@ -16,74 +15,77 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
 
         }
 
-        protected void btnImport_Click(object sender, EventArgs e)
+        protected async void btnImport_Click(object sender, EventArgs e)
         {
             string url = txtUrl.Text;
-            DocumentModel obj = new DocumentModel()
-            {
-                TemplateName = "Card",
-                Title = "item1",
-                KeyValues = new Dictionary<string, string>
-                { {"headline", "headline 1" } ,
-                {"shortDescription", "Lorem impsum" }}
-            };
-
+            //DocumentModel obj = new DocumentModel()
+            //{
+            //    TemplateName = "Card",
+            //    Title = "item1",
+            //    KeyValues = new Dictionary<string, string>
+            //    { {"headline", "headline 1" } ,
+            //    {"shortDescription", "Lorem impsum" }}
+            //};
             if (masterDb == null)
                 return;
             Item parentItem = masterDb.GetItem(Settings.GetSetting("Foundation.HomePath"));
-            Item templateItem = masterDb.GetItem(Settings.GetSetting("Project.TemplatesPath") + obj.TemplateName);
-            ID templateIdVariable = new ID();
-            if (templateItem != null)
+            var document = await ReadFileGoogle.Import(url);
+            foreach (var doc in document)
             {
-                templateIdVariable = templateItem.ID; // Returns the GUID of the template
-            }
-            else
-            {
-                Item templatesFolder = masterDb.GetItem(Settings.GetSetting("Project.TemplatesPath") + "/");
-                using (new SecurityDisabler())
+                Item templateItem = masterDb.GetItem(Settings.GetSetting("Project.TemplatesPath") + doc.TemplateName);
+                ID templateIdVariable = new ID();
+                if (templateItem != null)
                 {
-                    templatesFolder.Editing.BeginEdit();
-                    try
-                    {
-                        TemplateItem standardTemplate = masterDb.GetTemplate(Sitecore.TemplateIDs.Template);
-                        Item newTemplate = templatesFolder.Add(obj.TemplateName, new TemplateID(standardTemplate.ID));
-                        templatesFolder.Editing.EndEdit();
-                        templateIdVariable = newTemplate?.ID;
-                        Item section = AddTemplateSection(newTemplate, "General");
-                        foreach (var item in obj.KeyValues)
-                        {
-                            AddFieldToTemplate(section, item.Key, "Single-Line Text");
-                        }
-
-                    }
-                    catch
-                    {
-                        templatesFolder.Editing.CancelEdit();
-                        throw;
-                    }
+                    templateIdVariable = templateItem.ID; // Returns the GUID of the template
                 }
-            }
-            TemplateID templateId = new TemplateID(templateIdVariable);
-            using (new SecurityDisabler())
-            {
-                if (parentItem != null)
+                else
                 {
-                    Item newItem = parentItem.Add(obj.Title, templateId);
-                    if (newItem != null)
+                    Item templatesFolder = masterDb.GetItem(Settings.GetSetting("Project.TemplatesPath") + "/");
+                    using (new SecurityDisabler())
                     {
-                        newItem.Editing.BeginEdit();
+                        templatesFolder.Editing.BeginEdit();
                         try
                         {
-                            foreach (var item in obj.KeyValues)
+                            TemplateItem standardTemplate = masterDb.GetTemplate(Sitecore.TemplateIDs.Template);
+                            Item newTemplate = templatesFolder.Add(doc.TemplateName, new TemplateID(standardTemplate.ID));
+                            templatesFolder.Editing.EndEdit();
+                            templateIdVariable = newTemplate?.ID;
+                            Item section = AddTemplateSection(newTemplate, "General");
+                            foreach (var item in doc.KeyValues)
                             {
-                                newItem[item.Key] = item.Value;
+                                AddFieldToTemplate(section, item.Key, "Single-Line Text");
                             }
-                            newItem.Editing.EndEdit();
+
                         }
                         catch
                         {
-                            newItem.Editing.CancelEdit();
+                            templatesFolder.Editing.CancelEdit();
                             throw;
+                        }
+                    }
+                }
+                TemplateID templateId = new TemplateID(templateIdVariable);
+                using (new SecurityDisabler())
+                {
+                    if (parentItem != null)
+                    {
+                        Item newItem = parentItem.Add(doc.Title, templateId);
+                        if (newItem != null)
+                        {
+                            newItem.Editing.BeginEdit();
+                            try
+                            {
+                                foreach (var item in doc.KeyValues)
+                                {
+                                    newItem[item.Key] = item.Value;
+                                }
+                                newItem.Editing.EndEdit();
+                            }
+                            catch
+                            {
+                                newItem.Editing.CancelEdit();
+                                throw;
+                            }
                         }
                     }
                 }

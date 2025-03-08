@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ImportDocument.aspx.cs" Inherits="PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument.ImportDocument" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ImportDocument.aspx.cs" Inherits="PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument.ImportDocument" async="true" %>
 
 <!DOCTYPE html>
 <html>
