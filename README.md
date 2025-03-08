@@ -15,21 +15,36 @@
 
 ## Description
 
-In Sitecore content management, one of the most tedious and repetitive tasks for editors is manually importing data from external documents. Typically, when the team receives information in formats like Google Docs or Google Sheets, they must manually copy and paste the content, define the structure, create templates, and then generate items in Sitecore one by one.
-To optimize this workflow, we automated the import process, allowing editors to simply enter a Google Docs or Google Sheets URL within Sitecore. Our system then:
-Automatically reads the file using Google APIs.
-Identifies the data structure (field names and values).
-Uses AI to determine the appropriate field type in Sitecore (text, number, date, etc.), Also uses AI to check if the data contains sensitive data.
-Generates a Sitecore template dynamically based on the extracted data.
-Creates Sitecore items using the content from the file.
-With this process, we achieve:
-A significant reduction in manual content entry time.
-Elimination of human errors in content transcription.
-Standardization of how data is structured and stored.
-A seamless workflow that lets editors focus on content quality rather than manual data entry.
-This automation transforms the way content editors work in Sitecore, making the process faster, more accurate, and highly efficient.
+One of the most time-consuming and repetitive tasks for content editors is manually importing data from external sources. 
 
-⟹ Creates items/templates from an online document (Google Docs/ Google Spreadsheet)
+When they get content in files like Google Docs or Google Sheets they have to
+Define the structure manually, Create the necessary templates and Manually create each Sitecore item one by one copying and pasting the content
+
+To streamline this process, we developed an automated import module, allowing editors to simply paste a Google Docs or Google Sheets URL into Sitecore. Our module then:
+
+✅ Reads the file using Google APIs
+
+✅ Identifies the data structure, extracting field names and values
+
+✅ Uses AI to set the appropriate fieldtypes for the templates.
+
+✅ Detects sensitive data, such as personal information like email address
+
+✅ Dynamically generates templates based on the extracted content
+
+✅ And Creates Sitecore items instantly
+
+What about the Impact?
+
+🚀 This reduces manual work – no more copy-pasting!
+
+🎯 Eliminates human errors in data entry
+
+📏 Standardizes content structure, ensuring consistency
+
+💡 Empowers editors to focus on content quality rather than tedious tasks
+
+This automation transforms the way content is managed in Sitecore, making the process faster, more accurate, and highly efficient.
 
 > This module requires Sitecore 10.4, Open AI API Key and Google Cloud.
 
