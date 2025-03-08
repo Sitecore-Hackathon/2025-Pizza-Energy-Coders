@@ -18,117 +18,21 @@ namespace PizzaEnergyCoders.Services
     {
         public static async Task<List<DocumentModel>> Import(string URL)
         {
-            //if (URL.Contains("https://docs.google.com/spreadsheets"))
-            //{
             return await ReadGoogleSheets(URL);
-            //}
-            //else
-            //{
-            //    if (URL.Contains("https://docs.google.com/document"))
-            //    {
-            //    }
-            //}
         }
-        static async Task<UserCredential> GetGoogleCredentials(string[] scopes)
-        {
-            using (var stream = new FileStream("credentials.json", FileMode.Open, FileAccess.Read))
-            {
-                return await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.Load(stream).Secrets,
-                    scopes,
-                    "user",
-                    CancellationToken.None,
-                    new FileDataStore("token.json", true));
-            }
-        }
-        //static async Task ReadGoogleDocs()
-        //{
-        //    try
-        //    {
-        //        string[] Scopes = { DocsService.Scope.DocumentsReadonly };
-        //        var credential = await GetGoogleCredentials(Scopes);
 
-        //        var service = new DocsService(new BaseClientService.Initializer()
-        //        {
-        //            HttpClientInitializer = credential,
-        //            ApplicationName = "Google Docs API C#",
-        //        });
-
-        //        Console.WriteLine("Enter the Google Docs document ID:");
-        //        string documentId = Console.ReadLine();
-
-        //        Document doc = service.Documents.Get(documentId).Execute();
-
-        //        Console.WriteLine("\nDocument Title: " + doc.Title);
-        //        Console.WriteLine("Document Content:");
-
-        //        foreach (var element in doc.Body.Content)
-        //        {
-        //            // Read normal text
-        //            if (element.Paragraph != null)
-        //            {
-        //                foreach (var text in element.Paragraph.Elements)
-        //                {
-        //                    if (text.TextRun != null)
-        //                    {
-        //                        Console.Write(text.TextRun.Content);
-        //                    }
-        //                }
-        //                Console.WriteLine();
-        //            }
-
-        //            // Read tables
-        //            if (element.Table != null)
-        //            {
-        //                Console.WriteLine("\n--- Table found ---");
-        //                int rowIndex = 0;
-        //                foreach (var row in element.Table.TableRows)
-        //                {
-        //                    Console.Write($"Row {rowIndex + 1}: ");
-        //                    foreach (var cell in row.TableCells)
-        //                    {
-        //                        foreach (var cellElement in cell.Content)
-        //                        {
-        //                            if (cellElement.Paragraph != null)
-        //                            {
-        //                                foreach (var text in cellElement.Paragraph.Elements)
-        //                                {
-        //                                    if (text.TextRun != null)
-        //                                    {
-        //                                        Console.Write(text.TextRun.Content + " | ");
-        //                                    }
-        //                                }
-        //                            }
-        //                        }
-        //                    }
-        //                    Console.WriteLine();
-        //                    rowIndex++;
-        //                }
-        //            }
-        //        }
-        //    }
-        //    catch (Google.GoogleApiException ex)
-        //    {
-        //        Console.WriteLine("Google Docs API Error:");
-        //        Console.WriteLine($"Message: {ex.Message}");
-        //        Console.WriteLine($"Error Code: {ex.HttpStatusCode}");
-        //        Console.WriteLine($"Details: {ex.Error}");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine("General error:");
-        //        Console.WriteLine(ex.Message);
-        //    }
-        //}
         static async Task<List<DocumentModel>> ReadGoogleSheets(string URL)
         {
-            string[] Scopes = { SheetsService.Scope.SpreadsheetsReadonly };
-            var credential = await GetGoogleCredentials(Scopes);
+            string[] scopes = { SheetsService.Scope.SpreadsheetsReadonly };
+
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string credentialsPath = Path.Combine(baseDirectory, "App_Data\\Creds", "credentials.json");
+            var credential = GoogleCredential.FromFile(credentialsPath).CreateScoped(scopes);
 
             var service = new SheetsService(new BaseClientService.Initializer()
             {
                 HttpClientInitializer = credential,
-                ApplicationName = "Google Sheets API C#",
+                ApplicationName = "SCHackaton2025",
             });
 
             string spreadsheetId = ExtractSheetId(URL);
@@ -147,6 +51,19 @@ namespace PizzaEnergyCoders.Services
                     var firstRow = values.First().Where(cell => cell != null && !string.IsNullOrWhiteSpace(cell.ToString()))
                                           .Select(cell => cell.ToString())
                                           .ToList();
+
+                    var secondRow = values[1]
+                    .Take(firstRow.Count) // Tomar solo la cantidad de columnas que hay en headers
+                    .Select(cell => cell?.ToString() ?? string.Empty) // Manejar valores nulos
+                    .ToList();
+
+                    string secondRowStr = string.Join("|", secondRow);
+
+                    //get AI datatypes
+                    OpenAIService openAIService = new OpenAIService();
+                    var data = await openAIService.GetChatCompletionAsync(secondRowStr);
+                    var dataTypes = data.Choices[0].Message.Content.Split('|'); //"Single-Line Text|Number|Date|Multi-Line Text"
+
                     foreach (var row in values.Skip(1))
                     {
                         if (row.Any(cell => cell == null || string.IsNullOrWhiteSpace(cell.ToString())))

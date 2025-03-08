@@ -4,6 +4,8 @@ using Sitecore.Data;
 using Sitecore.Data.Items;
 using Sitecore.SecurityModel;
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
 {
@@ -18,14 +20,7 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
         protected async void btnImport_Click(object sender, EventArgs e)
         {
             string url = txtUrl.Text;
-            //DocumentModel obj = new DocumentModel()
-            //{
-            //    TemplateName = "Card",
-            //    Title = "item1",
-            //    KeyValues = new Dictionary<string, string>
-            //    { {"headline", "headline 1" } ,
-            //    {"shortDescription", "Lorem impsum" }}
-            //};
+
             if (masterDb == null)
                 return;
             Item parentItem = masterDb.GetItem(Settings.GetSetting("Foundation.HomePath"));

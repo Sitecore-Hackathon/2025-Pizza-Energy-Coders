@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ImportDocument.aspx.cs" Inherits="PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument.ImportDocument" async="true" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ImportDocument.aspx.cs" Inherits="PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument.ImportDocument" Async="true" %>
 
 <!DOCTYPE html>
 <html>
@@ -78,7 +78,7 @@
             <!-- Cuerpo del Modal -->
             <div class="modal-body">
                 <label for="txtUrl">Enter URL:</label>
-                <asp:TextBox ID="txtUrl" runat="server" CssClass="form-control"></asp:TextBox>
+                <asp:TextBox ID="txtUrl" runat="server" CssClass="form-control" Text="https://docs.google.com/spreadsheets/d/1i3NB4bzcSj8W58AQO5UrLembNdadCZw5JDiL-aNkxwo/edit?usp=sharing"></asp:TextBox>
                 <br />
                 <asp:Button ID="btnImport" runat="server" Text="Import to Sitecore" OnClick="btnImport_Click" CssClass="btn" />
             </div>
