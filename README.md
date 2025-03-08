@@ -18,7 +18,8 @@
 ## Description
 
 ⟹ Creates items/templates from an online document (Google Docs/ Google Spreadsheet)
-Our module is created in a Sitecore 10.4 XP Single On Premises Environment with the help of Open AI and Google Cloud.
+
+> This module requires Sitecore 10.4, Open AI API Key and Google Cloud.
 
 ## Pre-requisites and Dependencies
 
