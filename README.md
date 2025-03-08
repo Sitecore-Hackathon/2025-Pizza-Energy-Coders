@@ -5,17 +5,29 @@
 -   MUST READ: **[Submission requirements](SUBMISSION_REQUIREMENTS.md)**
 -   [Entry form template](ENTRYFORM.md)
 
-### ⟹ [Insert your documentation here](ENTRYFORM.md) <<
-
 ## Team name
 
-⟹ Pizza Energy coders
+⟹ Pizza Energy Coders
 
 ## Category
 
-⟹ Free for all
+⟹ Integration / AI  
 
 ## Description
+
+In Sitecore content management, one of the most tedious and repetitive tasks for editors is manually importing data from external documents. Typically, when the team receives information in formats like Google Docs or Google Sheets, they must manually copy and paste the content, define the structure, create templates, and then generate items in Sitecore one by one.
+To optimize this workflow, we automated the import process, allowing editors to simply enter a Google Docs or Google Sheets URL within Sitecore. Our system then:
+Automatically reads the file using Google APIs.
+Identifies the data structure (field names and values).
+Uses AI to determine the appropriate field type in Sitecore (text, number, date, etc.), Also uses AI to check if the data contains sensitive data.
+Generates a Sitecore template dynamically based on the extracted data.
+Creates Sitecore items using the content from the file.
+With this process, we achieve:
+A significant reduction in manual content entry time.
+Elimination of human errors in content transcription.
+Standardization of how data is structured and stored.
+A seamless workflow that lets editors focus on content quality rather than manual data entry.
+This automation transforms the way content editors work in Sitecore, making the process faster, more accurate, and highly efficient.
 
 ⟹ Creates items/templates from an online document (Google Docs/ Google Spreadsheet)
 
