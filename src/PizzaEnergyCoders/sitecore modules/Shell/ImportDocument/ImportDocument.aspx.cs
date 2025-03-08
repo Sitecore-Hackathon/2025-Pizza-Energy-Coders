@@ -4,6 +4,8 @@ using Sitecore.Data;
 using Sitecore.Data.Items;
 using Sitecore.SecurityModel;
 using System;
+using System.Linq;
+using System.Web.UI;
 
 namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
 {
@@ -17,6 +19,12 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
 
         protected async void btnImport_Click(object sender, EventArgs e)
         {
+            string scriptInit = @"
+              document.querySelector('.loader').style.display = 'block';
+              document.querySelector('.modal').style.display = 'none';";
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "ShowLoader", scriptInit, true);
+
             string url = txtUrl.Text;
             bool createdTemplate = false;
             int createdItems = 0;
@@ -24,6 +32,9 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
                 return;
             Item parentItem = masterDb.GetItem(Settings.GetSetting("Foundation.HomePath"));
             var document = await ReadFileGoogle.Import(url);
+
+            OpenAIService openAIService = new OpenAIService();           
+
             foreach (var doc in document)
             {
                 Item templateItem = masterDb.GetItem(Settings.GetSetting("Project.TemplatesPath") + doc.TemplateName);
@@ -51,7 +62,14 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
                             Item section = AddTemplateSection(newTemplate, "General");
                             foreach (var item in doc.KeyValues)
                             {
-                                AddFieldToTemplate(section, item.Key, "Single-Line Text");
+                                //get fieldtype
+                                var openAIServiceResponse = await openAIService.GetChatCompletionAsync(item.Value);
+                                var fieldType = openAIServiceResponse.Choices[0].Message.Content;
+
+                                if (string.IsNullOrEmpty(fieldType))
+                                    fieldType = "Single-Line Text";
+
+                                AddFieldToTemplate(section, item.Key, fieldType);
                             }
                             createdTemplate = true;
                         }
@@ -88,8 +106,15 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
                 }
                 createdItems++;
             }
-            lblSummary.Text = (createdTemplate ? "A template was created. " : "")+ "Total of items" + createdItems + " created";
+            lblSummary.Text = (createdTemplate ? "A template was created. " : "")+ "Total of items: " + createdItems + " created";
+            
+            string script = @"
+              document.querySelector('.loader').style.display = 'none';
+              document.querySelector('.modal').style.display = 'block';";
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "HideLoader", script, true);
         }
+
         private string CheckItem(string itemTitle, int iteration = 0, string itemTitleOriginal = "")
         {
             Item newItem = masterDb.GetItem(Settings.GetSetting("Foundation.HomePath") + "/" + itemTitle);

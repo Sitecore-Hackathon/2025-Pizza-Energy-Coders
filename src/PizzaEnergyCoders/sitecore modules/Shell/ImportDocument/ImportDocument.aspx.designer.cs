@@ -7,11 +7,13 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument {
-    
-    
-    public partial class ImportDocument {
-        
+namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument
+{
+
+
+    public partial class ImportDocument
+    {
+
         /// <summary>
         /// form1 control.
         /// </summary>
@@ -20,7 +22,7 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
-        
+
         /// <summary>
         /// txtUrl control.
         /// </summary>
@@ -29,7 +31,7 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtUrl;
-        
+
         /// <summary>
         /// btnImport control.
         /// </summary>
@@ -38,7 +40,7 @@ namespace PizzaEnergyCoders.sitecore_modules.Shell.ImportDocument {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnImport;
-        
+
         /// <summary>
         /// lblSummary control.
         /// </summary>

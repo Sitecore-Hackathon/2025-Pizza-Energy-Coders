@@ -205,17 +205,11 @@ namespace PizzaEnergyCoders.Services
                         .Select(cell => cell.ToString())
                         .ToList();
 
-                    var secondRow = values[1]
+                    /*var secondRow = values[1]
                         .Skip(2)
                         .Take(firstRow.Count)
                         .Select(cell => cell?.ToString() ?? string.Empty)
-                        .ToList();
-
-                    string secondRowStr = string.Join("|", secondRow);
-
-                    OpenAIService openAIService = new OpenAIService();
-                    var data = await openAIService.GetChatCompletionAsync(secondRowStr);
-                    var dataTypes = data.Choices[0].Message.Content.Split('|');
+                        .ToList();*/                   
 
                     foreach (var row in values.Skip(1))
                     {

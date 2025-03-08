@@ -25,10 +25,10 @@ namespace PizzaEnergyCoders.Services
             var url = "https://api.openai.com/v1/chat/completions";
 
             var jsonBody = $@"{{
-                ""model"": ""gpt-4o-mini"",
+                ""model"": ""gpt-4o"",
                 ""messages"": [
                     {{ ""role"": ""system"", ""content"": ""you are a content editor in sitecore"" }},
-                    {{ ""role"": ""user"", ""content"": ""Give me the corresponding sitecore field types foreach string separated with pipes. Respond only the field type separated by pipes. Having the folowing strings separated with pipes: {data}"" }}
+                    {{ ""role"": ""user"", ""content"": ""Transform the given word by replacing it with its corresponding Sitecore field type. Allowed Sitecore field types: Date, Datetime, Number, Single-Line Text, Rich Text. Classification Rules: If the word contains only numbers, classify it as Number.If the word matches a date format like dd/MM/yyyy or yyyy-MM-dd, classify it as Date.If the word matches a datetime format (including time), classify it as Datetime.If the word has more than 50 characters or has HTML tags, classify it as Rich Text.Respond only with the replaced field type. Use this word:: {data.Replace("\n","").Replace("\r", "")}"" }}
                 ]
             }}";
 

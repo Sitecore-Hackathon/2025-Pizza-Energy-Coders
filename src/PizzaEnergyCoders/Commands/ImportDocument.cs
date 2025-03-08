@@ -26,7 +26,7 @@ namespace PizzaEnergyCoders.Commands
             {
                 // Abre una ventana modal para la interacción con la IA
                 string url = "/sitecore modules/Shell/ImportDocument/ImportDocument.aspx";
-                SheerResponse.ShowModalDialog(url, "640", "360", "Import", true);
+                SheerResponse.ShowModalDialog(url, "800", "360", "Import", true);
                 args.WaitForPostBack();
             }
             else
