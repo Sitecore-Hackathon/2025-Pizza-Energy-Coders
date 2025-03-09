@@ -72,10 +72,13 @@ Our Import module does need two key Pre-requisites
     ![imageViewAll](docs/images/image9.png?raw=true)
 -   Enable three APIs
     -   Google Drive API
+      
         ![imageDrive](docs/images/image8.png?raw=true)
     -   Google Docs API
+ 
         ![imageDocs](docs/images/image10.png?raw=true)
     -   Google Sheets API
+ 
         ![imageSheets](docs/images/image12.png?raw=true)
 -   On the left menu bar select "Credentials"
     ![imageCredentials](docs/images/image11.png?raw=true)
