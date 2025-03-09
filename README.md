@@ -182,4 +182,4 @@ https://docs.google.com/document/d/1u72UPKpV3XzOE7GiDoAa4NpRH_SAMh2fSeGVCBQYs4I/
 
 ## Comments
 
-This module can be upgraded with more formats such as Google Slides or PDF, and also more sources like Office or Sharepoints
+This module can be upgraded with more formats such as Google Slides or PDF, and also more sources like Office 365 or Sharepoints
