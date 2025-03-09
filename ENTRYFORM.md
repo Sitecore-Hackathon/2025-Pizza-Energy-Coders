@@ -28,6 +28,8 @@ _You can alternately paste a [link here](#docs) to a document within this repo c
 
 [![Show the video](docs/images/Video%20cover.png)](https://youtu.be/gmA7SLzkLG4)
 
+[Show the video](https://youtu.be/gmA7SLzkLG4)
+
 ## Pre-requisites and Dependencies
 
 ⟹ Does your module rely on other Sitecore modules or frameworks?
