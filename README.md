@@ -109,26 +109,24 @@ Our Import module does need two key Pre-requisites
 5.	Click create secret key
 ![saveJson](docs/images/OpenAI3.png?raw=true)
 
-6.	Copy the key
-7.	Open the following file located in the local published site e.g. C:\inetpub\wwwroot\yourlocaldomain\App_Config\Include\ImportDocumentCommand.config
-8.	Locate the OPENAI_APIKEY setting
-![saveJson](docs/images/OpenAI4.png?raw=true)
+6.	Copy the key and save it for later
 
-9.	Paste the key in the value attribute
-![saveJson](docs/images/OpenAI5.png?raw=true)
-
-
-#### API Key set up
 
 ## Installation instructions
 
+#### API Key set up
+
 ⟹ Please follow the instruction below
 
--   Install the next [SitecorePackage](packages/ImportDocument-2.zip)
+-  Install the next [SitecorePackage](packages/ImportDocument-2.zip)
     -   This package will add "Import Document" in the Ribbon under "Developer" tab
--   Add the "credentials.json" created in the pre requisites in the local published solution under this folder "\App_Data\Creds"
--   Add the Open AI Key in "ImportDocumentCommand.config" in "OPENAI_APIKEY" setting value in the local published solution under this folder"\App_Config\Include"
+-  Add the "credentials.json" created in the pre requisites in the local published solution under this folder e.g. "C:\inetpub\wwwroot\yourlocaldomain\App_Data\Creds"
+-  Open the following file located in the local published site e.g. "C:\inetpub\wwwroot\yourlocaldomain\App_Config\Include\ImportDocumentCommand.config"
+-  Locate the OPENAI_APIKEY setting
+![saveJson](docs/images/OpenAI4.png?raw=true)
 
+-  Paste the key in the value attribute
+![saveJson](docs/images/OpenAI5.png?raw=true)
 
 ## Usage instructions
 
@@ -179,4 +177,9 @@ If you want to upload a file from Google Docs you have to follow the following s
 -	Second Column of the table: Fields Content.
 
 A sample Google Docs file can be found at the following URL
-https://docs.google.com/document/d/1u72UPKpV3XzOE7GiDoAa4NpRH_SAMh2fSeGVCBQYs4I/edit?tab=t.0
+https://docs.google.com/spreadsheets/d/1i3NB4bzcSj8W58AQO5UrLembNdadCZw5JDiL-aNkxwo/edit?usp=sharing
+https://docs.google.com/document/d/1u72UPKpV3XzOE7GiDoAa4NpRH_SAMh2fSeGVCBQYs4I/edit?usp=sharing
+
+## Comments
+
+This module can be upgraded with more formats such as Google Slides or PDF, and also more sources like Office or Sharepoints
